@@ -41,7 +41,7 @@ button{
 <body>
 
 <div class="container">
-<h2>AI 사용 검사 (간단한 데모)</h2>
+<h2>AI 사용 검사</h2>
 
 <textarea id="text" placeholder="문장을 입력하세요."></textarea>
 
@@ -214,6 +214,20 @@ function checkAI() {
 
     aiScore = Math.round(Math.min(aiScore, 100));
     humanScore = Math.round(Math.min(humanScore, 100));
+
+    // ==========================
+// 조사 띄어쓰기 실수 검사
+// ==========================
+
+// 예: "사람 은", "학교 를", "공부 가"
+const spacingError =
+    text.match(/[가-힣]+\s+(은|는|이|가|을|를|와|과)\b/g) || [];
+
+// 실수 개수
+const spacingCount = spacingError.length;
+
+// 실수가 있으면 AI 점수 감소
+aiScore -= spacingCount * 4;
 
     // ==========================
     // 최종 결과
