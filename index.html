@@ -53,52 +53,132 @@ button{
 <script>
 function checkAI(){
 
-    const text=document.getElementById("text").value.trim();
+    const text = document.getElementById("text").value.trim();
 
-    if(text.length<30){
-        document.getElementById("result").innerHTML="❗30자 이상 입력해주세요.";
+    if(text.length < 50){
+        document.getElementById("result").innerHTML =
+        "50자 이상 입력해주세요.";
         return;
     }
 
-    let score=0;
+    let aiScore = 0;
+    let humanScore = 0;
 
-    const keywords=[
-        "결론적으로",
-        "요약하면",
-        "또한",
-        "따라서",
-        "효율적",
-        "중요합니다",
-        "전반적으로",
-        "한편"
+    // AI에서 자주 보이는 표현
+    const aiWords = [
+        "결론적으로","요약하면","또한","따라서",
+        "전반적으로","효율적","중요합니다",
+        "한편","즉","예를 들어"
     ];
 
-    keywords.forEach(word=>{
-        if(text.includes(word)) score+=8;
+    aiWords.forEach(word=>{
+        if(text.includes(word))
+            aiScore += 6;
     });
 
-    const sentences=text.split(/[.!?\n]/).filter(s=>s.trim()!="");
+    // 문장 분리
+    const sentences =
+        text.split(/[.!?\n]/).filter(s=>s.trim());
 
-    if(sentences.length>4){
-        let avg=text.length/sentences.length;
-        if(avg>45) score+=20;
-    }
+    // 평균 길이
+    let lengths = sentences.map(s=>s.length);
+    let avg =
+        lengths.reduce((a,b)=>a+b,0)/lengths.length;
 
-    if(text.length>500) score+=15;
+    // 길이 편차
+    let variance =
+        lengths.reduce((a,b)=>a+Math.pow(b-avg,2),0)
+        /lengths.length;
 
-    score=Math.min(score,100);
+    let deviation = Math.sqrt(variance);
 
-    let msg="";
-
-    if(score<30){
-        msg="🟢 AI 작성 가능성 낮음 ("+score+"%)";
-    }else if(score<60){
-        msg="🟡 AI 작성 가능성 보통 ("+score+"%)";
+    // 문장 길이가 다양하면 사람 가능성 증가
+    if(deviation > 20){
+        humanScore += 20;
     }else{
-        msg="🔴 AI 작성 가능성 높음 ("+score+"%)";
+        aiScore += 12;
     }
 
-    document.getElementById("result").innerHTML=msg;
+    // 맞춤법이 조금 틀리면 사람 가능성
+    const typo =
+        (text.match(/ㅋㅋ|ㅎㅎ|ㅠ|ㅜ|~~|!!|\.\.\./g)||[]).length;
+
+    humanScore += typo * 4;
+
+    // 반복 단어 검사
+    const words =
+        text.replace(/[^\w가-힣 ]/g,"")
+        .split(/\s+/);
+
+    let count = {};
+
+    words.forEach(w=>{
+        if(w.length>1)
+            count[w]=(count[w]||0)+1;
+    });
+
+    let repeat = 0;
+
+    Object.values(count).forEach(c=>{
+        if(c>=5) repeat++;
+    });
+
+    aiScore += repeat * 5;
+
+    // 문단마다 길이 차이
+    const paragraphs =
+        text.split(/\n\s*\n/);
+
+    if(paragraphs.length>=2){
+
+        let paraLengths =
+            paragraphs.map(p=>p.length);
+
+        let max=Math.max(...paraLengths);
+        let min=Math.min(...paraLengths);
+
+        if(max-min>120)
+            humanScore+=15;
+    }
+
+    // 긴 글
+    if(text.length>800)
+        aiScore+=10;
+
+    aiScore=Math.min(aiScore,100);
+    humanScore=Math.min(humanScore,100);
+
+    let diversity =
+        Math.min(Math.round(deviation*2),100);
+
+    let result="";
+
+    if(aiScore>=70 && humanScore<40){
+        result="🔴 대부분 AI가 작성한 것으로 추정";
+    }else if(aiScore>=50 && humanScore>=40){
+        result="🟡 AI 초안 후 사람이 수정한 것으로 추정";
+    }else{
+        result="🟢 사람이 작성했을 가능성이 높음";
+    }
+
+    document.getElementById("result").innerHTML=
+    `
+    <h3>분석 결과</h3>
+
+    AI 작성 가능성 :
+    <b>${aiScore}%</b><br>
+
+    사람 수정 흔적 :
+    <b>${humanScore}%</b><br>
+
+    문장 다양성 :
+    <b>${diversity}%</b><br>
+
+    반복 표현 :
+    <b>${repeat}</b>개<br><br>
+
+    <h2>${result}</h2>
+    `;
 }
 </script>
 
