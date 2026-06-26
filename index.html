@@ -113,8 +113,7 @@ function checkAI() {
     // 문장 길이가 일정하면 AI
     if (deviation < 12)
         aiScore += 18;
-    else
-        humanScore += 18;
+    
 
     // ==========================
     // 단어 반복
@@ -149,12 +148,12 @@ function checkAI() {
     // ==========================
     // 사람 흔적
     // ==========================
-
+/*
     const casual =
         (text.match(/ㅋㅋ|ㅎㅎ|ㅠㅠ|ㅜㅜ|...|!!|~|근데|솔직히/g) || []).length;
 
     humanScore += casual * 5;
-
+*/
     // ==========================
     // 문단 길이 차이
     // ==========================
@@ -167,7 +166,7 @@ function checkAI() {
             paragraphs.map(v => v.length);
 
         if (Math.max(...paraLen) - Math.min(...paraLen) > 100)
-            humanScore += 12;
+            //humanScore += 12;
 
     }
 
@@ -186,7 +185,7 @@ function checkAI() {
     aiScore *= lengthFactor;
 
     // 짧을수록 사람 점수를 크게 올리지 않고 약간만 보정
-    humanScore += (1 - lengthFactor) * 15;
+    //humanScore += (1 - lengthFactor) * 15;
 
     // ==========================
     // 다양성
