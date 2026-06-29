@@ -11,6 +11,32 @@ body {
     background: #f5f5f5;
     margin: 40px;
 }
+/* 우상단 버튼 배치를 위한 헤더 영역 스타일 */
+.header-wrapper {
+    max-width: 700px;
+    margin: 0 auto 15px auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.header-wrapper h2 {
+    margin: 0;
+}
+/* 우상단 APK 다운로드 버튼 스타일 */
+.apk-download-btn {
+    padding: 8px 15px;
+    font-size: 14px;
+    font-weight: bold;
+    color: #fff;
+    background-color: #28a745;
+    text-decoration: none;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: background 0.2s;
+}
+.apk-download-btn:hover {
+    background-color: #218838;
+}
 .container {
     max-width: 700px;
     margin: auto;
@@ -26,7 +52,8 @@ textarea {
     font-size: 16px;
     box-sizing: border-box;
 }
-button {
+/* 검사하기 버튼 스타일 */
+.check-btn {
     margin-top: 15px;
     padding: 10px 20px;
     font-size: 16px;
@@ -36,7 +63,7 @@ button {
     border: none;
     border-radius: 5px;
 }
-button:hover {
+.check-btn:hover {
     background-color: #0056b3;
 }
 #result {
@@ -58,12 +85,17 @@ button:hover {
 </head>
 <body>
 
-<div class="container">
-<h2>AI 사용 검사</h2>
+<!-- 제목과 다운로드 버튼을 묶어주는 상단 헤더 영역 -->
+<div class="header-wrapper">
+    <h2>AI 사용 검사</h2>
+    <!-- YOUR_DOWNLOAD_LINK_HERE 부분에 실제 파일 주소를 넣으시면 됩니다 -->
+    <a href="webapp.apk" class="apk-download-btn" download>📱 Web App .apk 다운로드</a>
+</div>
 
+<div class="container">
 <textarea id="text" placeholder="문장을 입력하세요."></textarea>
 
-<button onclick="checkAI()">검사하기</button>
+<button class="check-btn" onclick="checkAI()">검사하기</button>
 
 <div id="result" style="display:none;"></div>
 </div>
@@ -87,7 +119,6 @@ function checkAI() {
     const aiHighWords = ["결론적으로", "요약하면", "종합하면", "따라서", "전반적으로", "궁극적으로", "주목할 만한", "흥미로운 점은"];
     const aiMidWords = ["또한", "한편", "즉", "예를 들어", "이를 통해", "알 수 있습니다", "효율적", "중요합니다", "제공합니다", "분석됩니다"];
     
-    // AI 특유의 종결 어미 패턴 (~라 할 수 있습니다, ~를 제공합니다)
     const aiPatterns = /(할 수 있습니다|제공합니다|분석됩니다|도움을 줍니다|기대됩니다)\./g;
 
     aiHighWords.forEach(word => { if (text.includes(word)) aiScore += 12; });
@@ -105,7 +136,6 @@ function checkAI() {
     const variance = lengths.reduce((a, b) => a + Math.pow(b - avg, 2), 0) / lengths.length;
     const deviation = Math.sqrt(variance);
 
-    // AI는 문장 길이 변화가 적고 정형화되어 있음
     if (deviation < 16) aiScore += 25;
     else if (deviation < 25) aiScore += 10;
 
@@ -122,7 +152,7 @@ function checkAI() {
 
     let repeat = 0;
     Object.values(map).forEach(v => {
-        if (v >= 3) repeat++; // 3회 이상 반복 시 카운트
+        if (v >= 3) repeat++;
     });
 
     aiScore += repeat * 5;
@@ -131,7 +161,7 @@ function checkAI() {
     // 4. 사람 흔적 검사 (감점 상한선 적용)
     // ==========================
     const casual = (text.match(/ㅋㅋ|ㅎㅎ|ㅠㅠ|ㅜㅜ|\.\.\.|!!|~|근데|솔직히/g) || []).length;
-    aiScore -= Math.min(20, casual * 5); // 감점 폭 폭주 방지 (최대 20점 감점)
+    aiScore -= Math.min(20, casual * 5);
 
     // ==========================
     // 5. 문단 길이 차이
@@ -148,7 +178,6 @@ function checkAI() {
     // 6. 길이 보정 (최솟값 안전장치)
     // ==========================
     const len = text.length;
-    // 글이 짧아도 점수가 완전히 소멸하지 않도록 최저 배율 0.5 설정
     const lengthFactor = Math.max(0.5, Math.min(1, Math.log(len + 1) / Math.log(1000)));
     aiScore *= lengthFactor;
 
@@ -157,12 +186,10 @@ function checkAI() {
     // ==========================
     const spacingError = text.match(/[가-힣]+\s+(은|는|이|가|을|를|와|과)\b/g) || [];
     const spacingCount = spacingError.length;
-    aiScore -= Math.min(15, spacingCount * 5); // 최대 15점 감점
+    aiScore -= Math.min(15, spacingCount * 5);
 
-    // 최종 스코어 제한 (0 ~ 100)
     aiScore = Math.round(Math.max(0, Math.min(aiScore, 100)));
 
-    // 정보 출력을 위한 다양성 및 신뢰도 지표 계산
     const diversity = Math.min(100, Math.round(deviation * 2));
     const confidence = Math.min(100, Math.round(lengthFactor * 100));
 
@@ -172,7 +199,7 @@ function checkAI() {
     let finalResult = "";
     let scoreClass = "";
 
-    if (aiScore >= 65) { // 판정 컷오프 소폭 하향 조정
+    if (aiScore >= 65) {
         finalResult = "🔴 AI 작성 가능성이 높습니다.";
         scoreClass = "score-red";
     } else if (aiScore >= 35) {
