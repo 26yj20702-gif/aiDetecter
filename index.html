@@ -82,20 +82,22 @@ function checkAI() {
     let aiScore = 0;
 
     // ==========================
-    // AI에서 자주 보이는 표현
+    // 1. AI 빈출 단어 및 서술어 패턴 (가중치 차등 부여)
     // ==========================
-    const aiWords = [
-        "결론적으로", "요약하면", "또한", "따라서", "전반적으로", 
-        "효율적", "중요합니다", "한편", "즉", "예를 들어", 
-        "종합하면", "이를 통해", "있습니다"
-    ];
+    const aiHighWords = ["결론적으로", "요약하면", "종합하면", "따라서", "전반적으로", "궁극적으로", "주목할 만한", "흥미로운 점은"];
+    const aiMidWords = ["또한", "한편", "즉", "예를 들어", "이를 통해", "알 수 있습니다", "효율적", "중요합니다", "제공합니다", "분석됩니다"];
+    
+    // AI 특유의 종결 어미 패턴 (~라 할 수 있습니다, ~를 제공합니다)
+    const aiPatterns = /(할 수 있습니다|제공합니다|분석됩니다|도움을 줍니다|기대됩니다)\./g;
 
-    aiWords.forEach(word => {
-        if (text.includes(word)) aiScore += 5;
-    });
+    aiHighWords.forEach(word => { if (text.includes(word)) aiScore += 12; });
+    aiMidWords.forEach(word => { if (text.includes(word)) aiScore += 6; });
+    
+    const patternCount = (text.match(aiPatterns) || []).length;
+    aiScore += patternCount * 8;
 
     // ==========================
-    // 문장 분석
+    // 2. 문장 분석 (변동성 기준 완화 및 계층화)
     // ==========================
     const sentences = text.split(/[.!?\n]/).filter(s => s.trim() !== "");
     const lengths = sentences.map(s => s.length);
@@ -103,11 +105,12 @@ function checkAI() {
     const variance = lengths.reduce((a, b) => a + Math.pow(b - avg, 2), 0) / lengths.length;
     const deviation = Math.sqrt(variance);
 
-    // 문장 길이가 일정하면 AI 확률 증가
-    if (deviation < 12) aiScore += 18;
+    // AI는 문장 길이 변화가 적고 정형화되어 있음
+    if (deviation < 16) aiScore += 25;
+    else if (deviation < 25) aiScore += 10;
 
     // ==========================
-    // 단어 반복
+    // 3. 단어 반복 검사 (기준 하향)
     // ==========================
     const words = text.replace(/[^\w가-힣 ]/g, "").split(/\s+/);
     const map = {};
@@ -119,48 +122,49 @@ function checkAI() {
 
     let repeat = 0;
     Object.values(map).forEach(v => {
-        if (v >= 5) repeat++;
+        if (v >= 3) repeat++; // 3회 이상 반복 시 카운트
     });
 
-    aiScore += repeat * 4;
+    aiScore += repeat * 5;
 
     // ==========================
-    // 사람 흔적
+    // 4. 사람 흔적 검사 (감점 상한선 적용)
     // ==========================
     const casual = (text.match(/ㅋㅋ|ㅎㅎ|ㅠㅠ|ㅜㅜ|\.\.\.|!!|~|근데|솔직히/g) || []).length;
-    aiScore -= casual * 5;
+    aiScore -= Math.min(20, casual * 5); // 감점 폭 폭주 방지 (최대 20점 감점)
 
     // ==========================
-    // 문단 길이 차이
+    // 5. 문단 길이 차이
     // ==========================
     const paragraphs = text.split(/\n\s*\n/);
     if (paragraphs.length >= 2) {
         const paraLen = paragraphs.map(v => v.length);
         if (Math.max(...paraLen) - Math.min(...paraLen) > 100) {
-            aiScore -= 12;
+            aiScore -= 10;
         }
     }
 
     // ==========================
-    // 길이 보정 (로그)
+    // 6. 길이 보정 (최솟값 안전장치)
     // ==========================
-    
+    const len = text.length;
+    // 글이 짧아도 점수가 완전히 소멸하지 않도록 최저 배율 0.5 설정
+    const lengthFactor = Math.max(0.5, Math.min(1, Math.log(len + 1) / Math.log(1000)));
+    aiScore *= lengthFactor;
 
     // ==========================
-    // 다양성 및 신뢰도 정의
-    // ==========================
-    const diversity = Math.min(100, Math.round(deviation * 2));
-    const confidence = Math.min(100, Math.round(lengthFactor * 100)); // 글이 길수록 분석 신뢰도 상승
-
-    // ==========================
-    // 조사 띄어쓰기 실수 검사
+    // 7. 조사 띄어쓰기 실수 검사 (인간적인 실수로 판별)
     // ==========================
     const spacingError = text.match(/[가-힣]+\s+(은|는|이|가|을|를|와|과)\b/g) || [];
     const spacingCount = spacingError.length;
-    aiScore -= spacingCount * 4;
+    aiScore -= Math.min(15, spacingCount * 5); // 최대 15점 감점
 
     // 최종 스코어 제한 (0 ~ 100)
     aiScore = Math.round(Math.max(0, Math.min(aiScore, 100)));
+
+    // 정보 출력을 위한 다양성 및 신뢰도 지표 계산
+    const diversity = Math.min(100, Math.round(deviation * 2));
+    const confidence = Math.min(100, Math.round(lengthFactor * 100));
 
     // ==========================
     // 최종 결과 메시지 및 색상 지정
@@ -168,10 +172,10 @@ function checkAI() {
     let finalResult = "";
     let scoreClass = "";
 
-    if (aiScore >= 70) {
+    if (aiScore >= 65) { // 판정 컷오프 소폭 하향 조정
         finalResult = "🔴 AI 작성 가능성이 높습니다.";
         scoreClass = "score-red";
-    } else if (aiScore >= 45) {
+    } else if (aiScore >= 35) {
         finalResult = "🟡 AI 초안을 사람이 수정했을 가능성이 있습니다.";
         scoreClass = "score-yellow";
     } else {
@@ -180,7 +184,7 @@ function checkAI() {
     }
 
     // ==========================
-    // 출력
+    // 결과 출력
     // ==========================
     result.style.display = "block";
     result.innerHTML = `
@@ -188,7 +192,7 @@ function checkAI() {
         AI 작성 가능성 : <b class="${scoreClass}" style="font-size:24px;">${aiScore}%</b><br><br>
         
         <div style="font-size:14px; color:#555; line-height: 1.6;">
-            • 문장 다양성: <b>${diversity}%</b><br>
+            • 문장 다양성(표준편차 배율): <b>${diversity}%</b> (실제 편차: ${deviation.toFixed(1)})<br>
             • 과도한 단어 반복: <b>${repeat}개</b><br>
             • 분석 신뢰도: <b>${confidence}%</b> (공백 포함 글자수: ${len}자)<br>
             • 맞춤법(조사) 실수 발견: <b>${spacingCount}개</b>
