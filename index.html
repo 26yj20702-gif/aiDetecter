@@ -6,36 +6,54 @@
 <title>AI 사용 검사</title>
 
 <style>
-body{
-    font-family:Arial,sans-serif;
-    background:#f5f5f5;
-    margin:40px;
+body {
+    font-family: Arial, sans-serif;
+    background: #f5f5f5;
+    margin: 40px;
 }
-.container{
-    max-width:700px;
-    margin:auto;
-    background:white;
-    padding:20px;
-    border-radius:10px;
-    box-shadow:0 0 10px rgba(0,0,0,.1);
+.container {
+    max-width: 700px;
+    margin: auto;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0,0,0,.1);
 }
-textarea{
-    width:100%;
-    height:220px;
-    padding:10px;
-    font-size:16px;
+textarea {
+    width: 100%;
+    height: 220px;
+    padding: 10px;
+    font-size: 16px;
+    box-sizing: border-box;
 }
-button{
-    margin-top:15px;
-    padding:10px 20px;
-    font-size:16px;
-    cursor:pointer;
+button {
+    margin-top: 15px;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
 }
-#result{
-    margin-top:20px;
-    font-size:20px;
-    font-weight:bold;
+button:hover {
+    background-color: #0056b3;
 }
+#result {
+    margin-top: 20px;
+    padding: 15px;
+    border-radius: 5px;
+    background: #fdfdfd;
+    border: 1px solid #ddd;
+}
+.result-title {
+    font-size: 20px;
+    font-weight: bold;
+    margin-top: 15px;
+}
+.score-red { color: #dc3545; }
+.score-yellow { color: #ffc107; }
+.score-green { color: #28a745; }
 </style>
 </head>
 <body>
@@ -47,100 +65,61 @@ button{
 
 <button onclick="checkAI()">검사하기</button>
 
-<div id="result"></div>
+<div id="result" style="display:none;"></div>
 </div>
 
 <script>
 function checkAI() {
-
     const text = document.getElementById("text").value.trim();
     const result = document.getElementById("result");
 
     if (text.length < 20) {
-        result.innerHTML = "20자 이상 입력해주세요.";
+        result.style.display = "block";
+        result.innerHTML = "<b style='color:#dc3545;'>20자 이상 입력해주세요.</b>";
         return;
     }
 
     let aiScore = 0;
-    let humanScore = 0;
 
     // ==========================
     // AI에서 자주 보이는 표현
     // ==========================
-
     const aiWords = [
-        "결론적으로",
-        "요약하면",
-        "또한",
-        "따라서",
-        "전반적으로",
-        "효율적",
-        "중요합니다",
-        "한편",
-        "즉",
-        "예를 들어",
-        "종합하면",
-        "이를 통해",
-        "알 수 있습니다"
+        "결론적으로", "요약하면", "또한", "따라서", "전반적으로", 
+        "효율적", "중요합니다", "한편", "즉", "예를 들어", 
+        "종합하면", "이를 통해", "알 수 있습니다"
     ];
 
     aiWords.forEach(word => {
-        if (text.includes(word))
-            aiScore += 5;
+        if (text.includes(word)) aiScore += 5;
     });
 
     // ==========================
     // 문장 분석
     // ==========================
-
-    const sentences = text
-        .split(/[.!?\n]/)
-        .filter(s => s.trim() !== "");
-
+    const sentences = text.split(/[.!?\n]/).filter(s => s.trim() !== "");
     const lengths = sentences.map(s => s.length);
-
-    const avg =
-        lengths.reduce((a, b) => a + b, 0) /
-        lengths.length;
-
-    const variance =
-        lengths.reduce((a, b) =>
-            a + Math.pow(b - avg, 2), 0
-        ) / lengths.length;
-
+    const avg = lengths.reduce((a, b) => a + b, 0) / lengths.length;
+    const variance = lengths.reduce((a, b) => a + Math.pow(b - avg, 2), 0) / lengths.length;
     const deviation = Math.sqrt(variance);
 
-    // 문장 길이가 일정하면 AI
-    if (deviation < 12)
-        aiScore += 18;
-    
+    // 문장 길이가 일정하면 AI 확률 증가
+    if (deviation < 12) aiScore += 18;
 
     // ==========================
     // 단어 반복
     // ==========================
-
-    const words = text
-        .replace(/[^\w가-힣 ]/g, "")
-        .split(/\s+/);
-
+    const words = text.replace(/[^\w가-힣 ]/g, "").split(/\s+/);
     const map = {};
 
     words.forEach(word => {
-
-        if (word.length < 2)
-            return;
-
+        if (word.length < 2) return;
         map[word] = (map[word] || 0) + 1;
-
     });
 
     let repeat = 0;
-
     Object.values(map).forEach(v => {
-
-        if (v >= 5)
-            repeat++;
-
+        if (v >= 5) repeat++;
     });
 
     aiScore += repeat * 4;
@@ -148,117 +127,81 @@ function checkAI() {
     // ==========================
     // 사람 흔적
     // ==========================
-
-    const casual =
-        (text.match(/ㅋㅋ|ㅎㅎ|ㅠㅠ|ㅜㅜ|...|!!|~|근데|솔직히/g) || []).length;
-
-    //humanScore += casual * 5;
-    aiScore -= casual*5;
+    const casual = (text.match(/ㅋㅋ|ㅎㅎ|ㅠㅠ|ㅜㅜ|\.\.\.|!!|~|근데|솔직히/g) || []).length;
+    aiScore -= casual * 5;
 
     // ==========================
     // 문단 길이 차이
     // ==========================
-
     const paragraphs = text.split(/\n\s*\n/);
-
     if (paragraphs.length >= 2) {
-
-        const paraLen =
-            paragraphs.map(v => v.length);
-
-        if (Math.max(...paraLen) - Math.min(...paraLen) > 100)
-            aiScore-=12;
-            //humanScore += 12;
-        
-
+        const paraLen = paragraphs.map(v => v.length);
+        if (Math.max(...paraLen) - Math.min(...paraLen) > 100) {
+            aiScore -= 12;
+        }
     }
 
     // ==========================
     // 길이 보정 (로그)
     // ==========================
-
     const len = text.length;
-
-    const lengthFactor =
-        Math.min(
-            1,
-            Math.log(len + 1) / Math.log(1000)
-        );
-
+    const lengthFactor = Math.min(1, Math.log(len + 1) / Math.log(1000));
     aiScore *= lengthFactor;
 
-    // 짧을수록 사람 점수를 크게 올리지 않고 약간만 보정
-    //humanScore += (1 - lengthFactor) * 15;
+    // ==========================
+    // 다양성 및 신뢰도 정의
+    // ==========================
+    const diversity = Math.min(100, Math.round(deviation * 2));
+    const confidence = Math.min(100, Math.round(lengthFactor * 100)); // 글이 길수록 분석 신뢰도 상승
 
     // ==========================
-    // 다양성
+    // 조사 띄어쓰기 실수 검사
     // ==========================
+    const spacingError = text.match(/[가-힣]+\s+(은|는|이|가|을|를|와|과)\b/g) || [];
+    const spacingCount = spacingError.length;
+    aiScore -= spacingCount * 4;
 
-    const diversity =
-        Math.min(
-            100,
-            Math.round(deviation * 2)
-        );
-
-    // ==========================
-    // 신뢰도
-    // ==========================
-
-   
-    aiScore = Math.round(Math.min(aiScore, 100));
-    
+    // 최종 스코어 제한 (0 ~ 100)
+    aiScore = Math.round(Math.max(0, Math.min(aiScore, 100)));
 
     // ==========================
-// 조사 띄어쓰기 실수 검사
-// ==========================
-
-// 예: "사람 은", "학교 를", "공부 가"
-const spacingError =
-    text.match(/[가-힣]+\s+(은|는|이|가|을|를|와|과)\b/g) || [];
-
-// 실수 개수
-const spacingCount = spacingError.length;
-
-// 실수가 있으면 AI 점수 감소
-aiScore -= spacingCount * 4;
-
+    // 최종 결과 메시지 및 색상 지정
     // ==========================
-    // 최종 결과
-    // ==========================
-
     let finalResult = "";
+    let scoreClass = "";
 
     if (aiScore >= 70) {
-
         finalResult = "🔴 AI 작성 가능성이 높습니다.";
-
+        scoreClass = "score-red";
     } else if (aiScore >= 45) {
-
         finalResult = "🟡 AI 초안을 사람이 수정했을 가능성이 있습니다.";
-
+        scoreClass = "score-yellow";
     } else {
-
         finalResult = "🟢 사람이 작성했을 가능성이 높습니다.";
-
+        scoreClass = "score-green";
     }
 
     // ==========================
     // 출력
     // ==========================
-
+    result.style.display = "block";
     result.innerHTML = `
-    <h3>분석 결과</h3>
-
-    AI 작성 가능성 :
-    <b>${aiScore}%</b><br>
-
-    
-    <small>
-    ※ 이 결과는 통계적·휴리스틱 기반의 참고용 추정이며,
-    AI 사용 여부를 확정적으로 판별하지는 않습니다.
-    </small>
+        <h3>분석 결과</h3>
+        AI 작성 가능성 : <b class="${scoreClass}" style="font-size:24px;">${aiScore}%</b><br><br>
+        
+        <div style="font-size:14px; color:#555; line-height: 1.6;">
+            • 문장 다양성: <b>${diversity}%</b><br>
+            • 과도한 단어 반복: <b>${repeat}개</b><br>
+            • 분석 신뢰도: <b>${confidence}%</b> (공백 포함 글자수: ${len}자)<br>
+            • 맞춤법(조사) 실수 발견: <b>${spacingCount}개</b>
+        </div>
+        
+        <div class="result-title">${finalResult}</div>
+        <br>
+        <small style="color:#888;">
+        ※ 이 결과는 통계적·휴리스틱 기반의 참고용 추정이며, AI 사용 여부를 확정적으로 판별하지는 않습니다.
+        </small>
     `;
-
 }
 </script>
 
