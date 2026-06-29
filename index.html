@@ -113,8 +113,7 @@ function checkAI() {
     // 문장 길이가 일정하면 AI
     if (deviation < 12)
         aiScore += 18;
-    else
-        humanScore += 18;
+    
 
     // ==========================
     // 단어 반복
@@ -153,7 +152,8 @@ function checkAI() {
     const casual =
         (text.match(/ㅋㅋ|ㅎㅎ|ㅠㅠ|ㅜㅜ|...|!!|~|근데|솔직히/g) || []).length;
 
-    humanScore += casual * 5;
+    //humanScore += casual * 5;
+    aiScore -= casual*5;
 
     // ==========================
     // 문단 길이 차이
@@ -167,7 +167,9 @@ function checkAI() {
             paragraphs.map(v => v.length);
 
         if (Math.max(...paraLen) - Math.min(...paraLen) > 100)
-            humanScore += 12;
+            aiScore-=12;
+            //humanScore += 12;
+        
 
     }
 
@@ -186,7 +188,7 @@ function checkAI() {
     aiScore *= lengthFactor;
 
     // 짧을수록 사람 점수를 크게 올리지 않고 약간만 보정
-    humanScore += (1 - lengthFactor) * 15;
+    //humanScore += (1 - lengthFactor) * 15;
 
     // ==========================
     // 다양성
@@ -202,18 +204,9 @@ function checkAI() {
     // 신뢰도
     // ==========================
 
-    const confidence =
-        Math.round(
-            Math.min(
-                100,
-                Math.log(len + 1) /
-                Math.log(2000) *
-                100
-            )
-        );
-
+   
     aiScore = Math.round(Math.min(aiScore, 100));
-    humanScore = Math.round(Math.min(humanScore, 100));
+    
 
     // ==========================
 // 조사 띄어쓰기 실수 검사
@@ -235,11 +228,11 @@ aiScore -= spacingCount * 4;
 
     let finalResult = "";
 
-    if (aiScore >= 70 && humanScore < 40) {
+    if (aiScore >= 70) {
 
         finalResult = "🔴 AI 작성 가능성이 높습니다.";
 
-    } else if (aiScore >= 45 && humanScore >= 30) {
+    } else if (aiScore >= 45) {
 
         finalResult = "🟡 AI 초안을 사람이 수정했을 가능성이 있습니다.";
 
@@ -259,7 +252,7 @@ aiScore -= spacingCount * 4;
     AI 작성 가능성 :
     <b>${aiScore}%</b><br>
 
-    사람 수정 흔적 :
+    <!--사람 수정 흔적 :
     <b>${humanScore}%</b><br>
 
     문장 다양성 :
@@ -271,7 +264,7 @@ aiScore -= spacingCount * 4;
     분석 신뢰도 :
     <b>${confidence}%</b><br><br>
 
-    <h2>${finalResult}</h2>
+    <h2>${finalResult}</h2-->
 
     <small>
     ※ 이 결과는 통계적·휴리스틱 기반의 참고용 추정이며,
