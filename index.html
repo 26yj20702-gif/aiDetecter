@@ -199,10 +199,10 @@ function checkAI() {
     let finalResult = "";
     let scoreClass = "";
 
-    if (aiScore >= 65) {
+    if (aiScore >= 50) {
         finalResult = "🔴 AI 작성 가능성이 높습니다.";
         scoreClass = "score-red";
-    } else if (aiScore >= 35) {
+    } else if (aiScore >= 25) {
         finalResult = "🟡 AI 초안을 사람이 수정했을 가능성이 있습니다.";
         scoreClass = "score-yellow";
     } else {
