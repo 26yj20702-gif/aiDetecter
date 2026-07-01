@@ -193,6 +193,10 @@ function checkAI() {
     const diversity = Math.min(100, Math.round(deviation * 2));
     const confidence = Math.min(100, Math.round(lengthFactor * 100));
 
+    //낮게 나와서*2
+    aiScore*=2;
+    
+
     // ==========================
     // 최종 결과 메시지 및 색상 지정
     // ==========================
