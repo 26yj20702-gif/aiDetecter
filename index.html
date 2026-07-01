@@ -5,82 +5,183 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AI 사용 검사</title>
 
+
 <style>
+/* 배경색을 세련된 소프트 블루 그라데이션으로 변경 */
 body {
-    font-family: Arial, sans-serif;
-    background: #f5f5f5;
-    margin: 40px;
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+    background: linear-gradient(135deg, #edf2f9 0%, #dbeafe 100%);
+    margin: 0;
+    padding: 40px 20px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    box-sizing: border-box;
 }
-/* 우상단 버튼 배치를 위한 헤더 영역 스타일 */
+
+/* 상단 타이틀 텍스트 색상 변경 */
 .header-wrapper {
-    max-width: 700px;
-    margin: 0 auto 15px auto;
+    width: 100%;
+    max-width: 720px;
+    margin-bottom: 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 .header-wrapper h2 {
     margin: 0;
+    font-size: 24px;
+    color: #1e3a8a; /* 딥 네이비 */
+    font-weight: 800;
+    letter-spacing: -0.5px;
 }
-/* 우상단 APK 다운로드 버튼 스타일 */
+
+/* APK 버튼을 고급스러운 오션 블루 그라데이션으로 변경 */
 .apk-download-btn {
-    padding: 8px 15px;
-    font-size: 14px;
-    font-weight: bold;
+    padding: 10px 18px;
+    font-size: 13px;
+    font-weight: 700;
     color: #fff;
-    background-color: #28a745;
+    background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
     text-decoration: none;
-    border-radius: 5px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    transition: background 0.2s;
+    border-radius: 30px;
+    box-shadow: 0 4px 14px rgba(2, 132, 199, 0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
 .apk-download-btn:hover {
-    background-color: #218838;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(2, 132, 199, 0.4);
+    background: linear-gradient(135deg, #0369a1 0%, #075985 100%);
 }
+
 .container {
-    max-width: 700px;
-    margin: auto;
-    background: white;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0,0,0,.1);
-}
-textarea {
     width: 100%;
-    height: 220px;
-    padding: 10px;
-    font-size: 16px;
+    max-width: 720px;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(30, 58, 138, 0.05); /* 푸른빛 도는 그림자 */
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.8);
     box-sizing: border-box;
 }
-/* 검사하기 버튼 스타일 */
-.check-btn {
-    margin-top: 15px;
-    padding: 10px 20px;
+
+/* 입력창 테두리 포커스 색상을 오션 블루로 변경 */
+textarea {
+    width: 100%;
+    height: 240px;
+    padding: 18px;
     font-size: 16px;
-    cursor: pointer;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 5px;
+    border: 1px solid #cbd5e1;
+    border-radius: 12px;
+    box-sizing: border-box;
+    resize: none;
+    background-color: #f8fafc;
+    color: #334155;
+    transition: all 0.3s ease;
+    line-height: 1.6;
 }
-.check-btn:hover {
-    background-color: #0056b3;
+textarea:focus {
+    outline: none;
+    border-color: #0284c7;
+    background-color: #fff;
+    box-shadow: 0 0 0 4px rgba(2, 132, 199, 0.15);
 }
-#result {
+
+/* 분석 버튼을 신뢰감을 주는 인디고 딥 블루로 변경 */
+.check-btn {
+    width: 100%;
     margin-top: 20px;
     padding: 15px;
-    border-radius: 5px;
-    background: #fdfdfd;
-    border: 1px solid #ddd;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 4px 14px rgba(30, 64, 175, 0.3);
+    transition: all 0.3s ease;
 }
+.check-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(30, 64, 175, 0.4);
+}
+.check-btn:active {
+    transform: translateY(1px);
+}
+
+#result {
+    margin-top: 25px;
+    padding: 25px;
+    border-radius: 16px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+}
+
+.gauge-container {
+    width: 100%;
+    height: 12px;
+    background-color: #e2e8f0;
+    border-radius: 6px;
+    margin-top: 10px;
+    margin-bottom: 20px;
+    overflow: hidden;
+}
+.gauge-bar {
+    height: 100%;
+    width: 0%;
+    border-radius: 6px;
+    transition: width 0.6s cubic-bezier(0.1, 0.8, 0.3, 1);
+}
+
+/* 분석 수치 내부의 스펙 칩 배경색을 부드러운 아이스 블루로 변경 */
+.metric-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+}
+.metric-chip {
+    background: #f0f5ff;
+    border: 1px solid #e0eafd;
+    padding: 12px 16px;
+    border-radius: 10px;
+    font-size: 14px;
+    color: #1e3a8a;
+}
+.metric-chip b {
+    color: #0f172a;
+    float: right;
+}
+
 .result-title {
-    font-size: 20px;
-    font-weight: bold;
+    font-size: 18px;
+    font-weight: 800;
     margin-top: 15px;
+    padding: 14px;
+    border-radius: 10px;
+    text-align: center;
 }
-.score-red { color: #dc3545; }
-.score-yellow { color: #ffc107; }
-.score-green { color: #28a745; }
+
+/* 결과 분류 색상 톤을 가독성 좋은 파스텔 계열로 매칭 */
+.score-red { color: #e11d48; }
+.score-yellow { color: #d97706; }
+.score-green { color: #059669; }
+
+.bg-red { background-color: #ffe4e6; color: #9f1239; }
+.bg-yellow { background-color: #fef3c7; color: #92400e; }
+.bg-green { background-color: #d1fae5; color: #065f46; }
+
+.bar-red { background: linear-gradient(90deg, #fda4af, #e11d48); }
+.bar-yellow { background: linear-gradient(90deg, #fde047, #d97706); }
+.bar-green { background: linear-gradient(90deg, #6ee7b7, #059669); }
 </style>
 </head>
 <body>
