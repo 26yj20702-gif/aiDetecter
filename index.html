@@ -182,6 +182,26 @@ textarea:focus {
 .bar-red { background: linear-gradient(90deg, #fda4af, #e11d48); }
 .bar-yellow { background: linear-gradient(90deg, #fde047, #d97706); }
 .bar-green { background: linear-gradient(90deg, #6ee7b7, #059669); }
+
+    /* 전체 지우기 버튼 스타일 (차분한 그레이 톤) */
+.clear-btn {
+    width: 100%;
+    margin-top: 10px;
+    padding: 12px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    background: #e2e8f0;
+    color: #475569;
+    border: none;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+.clear-btn:hover {
+    background: #cbd5e1;
+    color: #1e293b;
+}
+
 </style>
 </head>
 <body>
@@ -196,12 +216,24 @@ textarea:focus {
 <div class="container">
 <textarea id="text" placeholder="문장을 입력하세요."></textarea>
 
+
+<button class="clear-btn" onclick="clearText()">전체 지우기</button>
+
+
 <button class="check-btn" onclick="checkAI()">검사하기</button>
 
 <div id="result" style="display:none;"></div>
 </div>
 
 <script>
+    // 입력창과 결과창을 모두 초기화하는 함수
+function clearText() {
+    document.getElementById("text").value = "";
+    const result = document.getElementById("result");
+    result.style.display = "none";
+    result.innerHTML = "";
+}
+
 function checkAI() {
     const text = document.getElementById("text").value.trim();
     const result = document.getElementById("result");
